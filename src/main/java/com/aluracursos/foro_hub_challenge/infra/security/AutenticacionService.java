@@ -1,5 +1,6 @@
-package com.aluracursos.foro_hub_challenge.domain.usuario;
+package com.aluracursos.foro_hub_challenge.infra.security;
 
+import com.aluracursos.foro_hub_challenge.domain.usuario.IUsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;

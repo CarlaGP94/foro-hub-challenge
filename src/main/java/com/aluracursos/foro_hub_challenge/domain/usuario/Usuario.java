@@ -1,5 +1,7 @@
 package com.aluracursos.foro_hub_challenge.domain.usuario;
 
+import com.aluracursos.foro_hub_challenge.domain.usuario.dto.UsuarioActualizacionDetalle;
+import com.aluracursos.foro_hub_challenge.domain.usuario.dto.UsuarioCreacionDetalle;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -27,6 +29,12 @@ public class Usuario implements UserDetails {
     @Column(unique = true)
     private String email;
     private String contrasena;
+
+    public Usuario(UsuarioCreacionDetalle datos) {
+        this.nombre = datos.nombre();
+        this.email = datos.email();
+        this.contrasena = datos.contrasena();
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -61,5 +69,10 @@ public class Usuario implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public void actualizarUsuario(UsuarioActualizacionDetalle datos) {
+        this.email = datos.email();
+        this.contrasena = datos.contrasena();
     }
 }

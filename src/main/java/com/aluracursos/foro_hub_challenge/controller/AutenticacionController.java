@@ -1,8 +1,8 @@
 package com.aluracursos.foro_hub_challenge.controller;
 
-import com.aluracursos.foro_hub_challenge.domain.usuario.AutenticacionDetalle;
+import com.aluracursos.foro_hub_challenge.infra.security.dto.AutenticacionDetalle;
 import com.aluracursos.foro_hub_challenge.domain.usuario.Usuario;
-import com.aluracursos.foro_hub_challenge.infra.security.TokenDetalle;
+import com.aluracursos.foro_hub_challenge.infra.security.dto.TokenDetalle;
 import com.aluracursos.foro_hub_challenge.infra.security.TokenService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
