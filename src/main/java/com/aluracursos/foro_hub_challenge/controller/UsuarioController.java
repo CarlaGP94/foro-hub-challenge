@@ -29,7 +29,7 @@ public class UsuarioController {
 
         var usuario = service.guardarNuevoUsuario(datos);
 
-        var uri = uriComponentsBuilder.path("/usuario/{id}").buildAndExpand(usuario.getId()).toUri();
+        var uri = uriComponentsBuilder.path("/usuarios/{id}").buildAndExpand(usuario.getId()).toUri();
 
         return ResponseEntity.created(uri).body(usuario);
     }
@@ -65,7 +65,7 @@ public class UsuarioController {
 
     @Transactional
     @DeleteMapping("/{id}")
-    public ResponseEntity<UsuarioDetalle> eliminar(@PathVariable Long id){
+    public ResponseEntity<Void> eliminar(@PathVariable Long id){
 
         service.eliminarUnUsuario(id);
 

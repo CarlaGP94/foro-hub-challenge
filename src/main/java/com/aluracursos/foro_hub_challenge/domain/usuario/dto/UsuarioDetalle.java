@@ -1,7 +1,6 @@
 package com.aluracursos.foro_hub_challenge.domain.usuario.dto;
 
 import com.aluracursos.foro_hub_challenge.domain.usuario.Usuario;
-import org.jspecify.annotations.Nullable;
 
 public record UsuarioDetalle(
         Long id,

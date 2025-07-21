@@ -8,6 +8,7 @@ import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,18 +20,24 @@ public class UsuarioService {
     @Autowired
     private IUsuarioRepository repository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Transactional
     public UsuarioDetalle guardarNuevoUsuario(UsuarioCreacionDetalle datos){
+        // 1. Busca por email
+        repository.findByEmail(datos.email()).ifPresent(usuarioExistente -> {
+            throw new UsuarioDuplicadoException("El email ya está registrado.");
+        });
 
-        var usuarioDB = repository.findByEmail(datos.email());
+        // 2. Hashea la contraseña antes de crear al usuario.
+        String contrasenaHash = passwordEncoder.encode(datos.contrasena());
 
-        if(usuarioDB != null) {
-            var usuario = new Usuario(datos);
-            repository.save(usuario);
-            return new UsuarioDetalle(usuario);
-        }
+        // 3. Crear al usuario con la contraseña hasheada.
+        var usuario = new Usuario(datos.nombre(), datos.email(), contrasenaHash);
+        repository.save(usuario);
 
-        throw new UsuarioDuplicadoException("Usuario duplicado.");
+        return new UsuarioDetalle(usuario);
     }
 
     public Page<UsuarioDetalle> listarUsuarios(Pageable paginacion){
@@ -41,7 +48,8 @@ public class UsuarioService {
 
     public UsuarioDetalle listarUsuarioPorId(Long id){
 
-        var usuario = repository.getReferenceById(id);
+        var usuario = repository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Usuario con ID " + id + " no encontrado."));
 
         return new UsuarioDetalle(usuario);
     }
@@ -50,7 +58,7 @@ public class UsuarioService {
     public UsuarioDetalle actualizarUnUsuario(Long id, UsuarioActualizacionDetalle datos){
 
         // 1er filtro: buscar el id en DB
-        Usuario usuarioExisteId = repository.findById(id)
+        var usuarioExisteId = repository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Usuario con ID " + id + " no encontrado para actualizar.")); // 404
 
         // 2do filtro: Regla de negocio -> no pueden haber usuarios con el mismo email.
@@ -58,7 +66,7 @@ public class UsuarioService {
         if (!usuarioExisteId.getEmail().equals(datos.email())) {
 
             // Busca que no coincida con otros mails de usuarios ya existentes.
-            Optional<Usuario> usuarioDuplicado = repository.getReferenceByEmail(datos.email());
+            Optional<Usuario> usuarioDuplicado = repository.findByEmail(datos.email());
 
             // Si encontramos un usuario con el mismo email...
             if (usuarioDuplicado.isPresent()) {
@@ -69,8 +77,14 @@ public class UsuarioService {
             }
         }
 
+        String nuevaContrasenaHash = null;
+        // En caso de actualizar la contraseña:
+        if (datos.contrasena() != null && !datos.contrasena().isEmpty()) {
+            nuevaContrasenaHash = passwordEncoder.encode(datos.contrasena());
+        }
+
         // Pasa todos los filtros
-        usuarioExisteId.actualizarUsuario(datos);
+        usuarioExisteId.actualizarUsuario(datos.email(), datos.contrasena());
 
         return new UsuarioDetalle(usuarioExisteId);
     }

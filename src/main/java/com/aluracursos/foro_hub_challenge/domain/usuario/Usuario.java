@@ -30,10 +30,10 @@ public class Usuario implements UserDetails {
     private String email;
     private String contrasena;
 
-    public Usuario(UsuarioCreacionDetalle datos) {
-        this.nombre = datos.nombre();
-        this.email = datos.email();
-        this.contrasena = datos.contrasena();
+    public Usuario(String nombre, String email, String contrasenaHasheada) {
+        this.nombre = nombre;
+        this.email = email;
+        this.contrasena = contrasenaHasheada;
     }
 
     @Override
@@ -71,8 +71,8 @@ public class Usuario implements UserDetails {
         return true;
     }
 
-    public void actualizarUsuario(UsuarioActualizacionDetalle datos) {
-        this.email = datos.email();
-        this.contrasena = datos.contrasena();
+    public void actualizarUsuario(String email, String contrasenaHasheada) {
+        this.email = email;
+        this.contrasena = contrasenaHasheada;
     }
 }
