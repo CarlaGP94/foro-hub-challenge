@@ -9,8 +9,8 @@ public record TopicoCreacionDetalle(
         String titulo,
         @NotBlank(message = "El campo 'mensaje' es obligatorio.")
         String mensaje,
-        @NotBlank(message = "El campo 'autor' es obligatorio.")
-        String autor,
+        @NotNull(message = "El campo 'autor' es obligatorio.")
+        Long autorId,
         @NotNull(message = "El campo 'curso' es obligatorio.")
         Curso curso
 ) {

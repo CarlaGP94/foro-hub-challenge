@@ -14,7 +14,7 @@ public record TopicoDetalle (
     @JsonFormat(pattern = "dd-MM-yyyy HH:mm")
     LocalDateTime fechaDeCreacion,
     Status status,
-    String autor,
+    UsuarioDetalleParaTopico autor,
     Curso curso
 ) {
     public TopicoDetalle(Topico topico) {
@@ -24,7 +24,7 @@ public record TopicoDetalle (
                 topico.getMensaje(),
                 topico.getFechaDeCreacion(),
                 topico.getStatus(),
-                topico.getAutor(),
+                new UsuarioDetalleParaTopico(topico.getAutor()),
                 topico.getCurso()
         );
     }

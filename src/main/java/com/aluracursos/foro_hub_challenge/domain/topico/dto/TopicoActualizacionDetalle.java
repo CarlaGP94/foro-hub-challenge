@@ -9,8 +9,6 @@ public record TopicoActualizacionDetalle(
         String titulo,
         @NotBlank(message = "El campo 'mensaje' es obligatorio si quiere actualizar el tópico.")
         String mensaje,
-        @NotBlank(message = "El campo 'autor' es obligatorio si quiere actualizar el tópico.")
-        String autor,
         @NotNull(message = "El campo 'curso' es obligatorio si quiere actualizar el tópico.")
         Curso curso
 ) {

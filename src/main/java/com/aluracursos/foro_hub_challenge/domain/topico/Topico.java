@@ -3,6 +3,7 @@ package com.aluracursos.foro_hub_challenge.domain.topico;
 import com.aluracursos.foro_hub_challenge.domain.topico.dto.TopicoActualizacionDetalle;
 import com.aluracursos.foro_hub_challenge.domain.topico.dto.TopicoCreacionDetalle;
 import com.aluracursos.foro_hub_challenge.domain.topico.dto.TopicoDetalle;
+import com.aluracursos.foro_hub_challenge.domain.usuario.Usuario;
 import jakarta.persistence.*;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
@@ -29,35 +30,43 @@ public class Topico {
     private LocalDateTime fechaDeCreacion;
     @Enumerated(EnumType.STRING)
     private Status status;
-    private String autor;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "autor_id")
+    private Usuario autor;
     @Enumerated(EnumType.STRING)
     private Curso curso;
 
-    public Topico(TopicoDetalle datos) {
-        this(
-                datos.id(),
-                datos.titulo(),
-                datos.mensaje(),
-                datos.fechaDeCreacion(),
-                datos.status(),
-                datos.autor(),
-                datos.curso()
-        );
-    }
-
-    public Topico(TopicoCreacionDetalle datos){
-        this.titulo = datos.titulo();
-        this.mensaje = datos.mensaje();
-        this.autor = datos.autor();
-        this.curso = datos.curso();
+//    public Topico(TopicoDetalle datos) {
+//        this(
+//                datos.id(),
+//                datos.titulo(),
+//                datos.mensaje(),
+//                datos.fechaDeCreacion(),
+//                datos.status(),
+//                null,
+//                datos.curso()
+//        );
+//    }
+    // Constructor para crear un nuevo tópico.
+    public Topico(String titulo, String mensaje, Usuario autor, Curso curso) {
+        this.titulo = titulo;
+        this.mensaje = mensaje;
+        this.autor = autor;
+        this.curso = curso;
         this.fechaDeCreacion = LocalDateTime.now();
         this.status = Status.ABIERTO;
     }
 
     public void actualizarTopico(TopicoActualizacionDetalle datos){
-        this.titulo = datos.titulo();
-        this.mensaje = datos.mensaje();
-        this.autor = datos.autor();
-        this.curso = datos.curso();
+        if (datos.titulo() != null && !datos.titulo().isBlank()) {
+            this.titulo = datos.titulo();
+        }
+        if (datos.mensaje() != null && !datos.mensaje().isBlank()) {
+            this.mensaje = datos.mensaje();
+        }
+        if (datos.curso() != null) {
+            this.curso = datos.curso();
+        }
     }
+
 }

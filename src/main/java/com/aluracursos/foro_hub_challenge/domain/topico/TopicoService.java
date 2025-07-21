@@ -1,6 +1,8 @@
 package com.aluracursos.foro_hub_challenge.domain.topico;
 
 import com.aluracursos.foro_hub_challenge.domain.topico.dto.TopicoActualizacionDetalle;
+import com.aluracursos.foro_hub_challenge.domain.usuario.IUsuarioRepository;
+import com.aluracursos.foro_hub_challenge.domain.usuario.Usuario;
 import com.aluracursos.foro_hub_challenge.infra.exception.TopicoDuplicadoException;
 import com.aluracursos.foro_hub_challenge.domain.topico.dto.TopicoCreacionDetalle;
 import com.aluracursos.foro_hub_challenge.domain.topico.dto.TopicoDetalle;
@@ -17,31 +19,43 @@ import java.util.Optional;
 public class TopicoService {
 
     @Autowired
-    private ITopicoRepository repository;
+    private ITopicoRepository topicoRepository;
+
+    @Autowired
+    private IUsuarioRepository usuarioRepository;
 
     @Transactional
     public TopicoDetalle guardarNuevoTopico(TopicoCreacionDetalle datos){
 
-        var topicosDB = repository.findByTituloAndMensaje(datos.titulo(), datos.mensaje());
+        // Regla de negocio: busca si el título y el mensaje ya existen en la DB.
+        topicoRepository.findByTituloAndMensaje(datos.titulo(), datos.mensaje())
+                .ifPresent(topicoExistente -> {
+                    throw new TopicoDuplicadoException("Ya existe un tópico con el mismo título y mensaje.");
+                });
 
-        if(topicosDB.isEmpty()) {
-            var topico = new Topico(datos);
-            repository.save(topico);
-            return new TopicoDetalle(topico);
-        }
+        // Buscar la entidad Usuario por su ID (el autor del tópico), si no está -> 404
+        Usuario autor = usuarioRepository.findById(datos.autorId())
+                .orElseThrow(() -> new EntityNotFoundException("El autor con ID " + datos.autorId() + " no fue encontrado."));
 
-        throw new TopicoDuplicadoException("Tópico duplicado.");
+
+        var topico = new Topico(datos.titulo(), datos.mensaje(), autor, datos.curso());
+
+        // Guarda el nuevo tópico en la base de datos.
+        topico = topicoRepository.save(topico);
+
+        return new TopicoDetalle(topico);
     }
 
     public Page<TopicoDetalle> listarTopicos(Pageable paginacion){
 
-        return repository.findAll(paginacion)
+        return topicoRepository.findAll(paginacion)
                 .map(TopicoDetalle::new);
     }
 
     public TopicoDetalle listarTopicoPorId(Long id){
 
-        var topico = repository.getReferenceById(id);
+        var topico = topicoRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Tópico con ID " + id + " no encontrado."));
 
         return new TopicoDetalle(topico);
     }
@@ -50,7 +64,7 @@ public class TopicoService {
     public TopicoDetalle actualizarUnTopico(Long id, TopicoActualizacionDetalle datos){
 
         // 1er filtro: buscar el id en DB
-        Topico topicoExisteId = repository.findById(id)
+        Topico topicoExisteId = topicoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tópico con ID " + id + " no encontrado para actualizar.")); // 404
 
         // 2do filtro: Regla de negocio -> no pueden haber tópicos con el mismo título y mensaje.
@@ -58,7 +72,7 @@ public class TopicoService {
         if (!topicoExisteId.getTitulo().equals(datos.titulo()) || !topicoExisteId.getMensaje().equals(datos.mensaje())) {
 
             // Busca que no coincida con otros ya existentes.
-            Optional<Topico> topicoDuplicado = repository.findByTituloAndMensaje(datos.titulo(), datos.mensaje());
+            Optional<Topico> topicoDuplicado = topicoRepository.findByTituloAndMensaje(datos.titulo(), datos.mensaje());
 
             // Si encontramos un tópico con el mismo título y mensaje...
             if (topicoDuplicado.isPresent()) {
@@ -78,9 +92,9 @@ public class TopicoService {
     @Transactional
     public void eliminarUnTopico(Long id){
 
-        Topico topicoExisteId = repository.findById(id)
+        Topico topicoExisteId = topicoRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Tópico con ID " + id + " no encontrado.")); // 404
 
-        repository.delete(topicoExisteId);
+        topicoRepository.delete(topicoExisteId);
     }
 }

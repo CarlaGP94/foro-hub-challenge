@@ -84,7 +84,7 @@ public class UsuarioService {
         }
 
         // Pasa todos los filtros
-        usuarioExisteId.actualizarUsuario(datos.email(), datos.contrasena());
+        usuarioExisteId.actualizarUsuario(datos.email(), nuevaContrasenaHash);
 
         return new UsuarioDetalle(usuarioExisteId);
     }
